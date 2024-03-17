@@ -43,7 +43,7 @@ local function PrintAddonStatus()
     local enabledString = ENABLED
     local voiceString = ENABLED
 
-    if not IsPrintEnabled then
+    if not IsPrintEnabled() then
         enabledString = DISABLED
     end
 
@@ -76,8 +76,14 @@ end
 ---@param ... unknown
 function f:PLAYER_LOGIN(self, event, ...)
     AADB = AADB or {}
-    AADB.enabled = (AADB.enabled or true)
-    AADB.voice = (AADB.voice or true)
+    if AADB.enabled == nil then
+        AADB.enabled = true
+    end
+
+    if AADB.voice == nil then
+        AADB.voice = true
+    end
+
     AADB.replay = (AADB.replay or "")
 
     PrintAddonStatus()
