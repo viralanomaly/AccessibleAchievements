@@ -78,6 +78,7 @@ function f:PLAYER_LOGIN(self, event, ...)
     AADB = AADB or {}
     AADB.enabled = (AADB.enabled or true)
     AADB.voice = (AADB.voice or true)
+    AADB.replay = (AADB.replay or "")
 
     PrintAddonStatus()
 end
