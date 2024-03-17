@@ -1,0 +1,8 @@
+## Interface: 100205
+## Version: 0.0.1
+## Title: AccessibleAchievements
+## Notes: Print the full text of your achievements when you earn one
+## Author: ViralAnomaly
+## SavedVariables: AADB
+
+AccessibleAchievements.lua
