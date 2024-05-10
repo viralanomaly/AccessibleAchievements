@@ -1,5 +1,3 @@
-local f = CreateFrame("Frame")
-
 local ENABLED = "enabled"
 local ENABLE = "enable"
 local DISABLED = "disabled"
@@ -8,20 +6,16 @@ local VOICE = "voice"
 local NOVOICE = "novoice"
 local REPLAY = "replay"
 
---- Main even handling function
----@param event any
----@param ... unknown
-function f:OnEvent(event, ...)
-    self[event](self, event, ...) 
-end
+AccessibleAchievements = LibStub("AceAddon-3.0"):NewAddon("AccessibleAchievements", "AceConsole-3.0", "AceEvent-3.0")
+AA = AccessibleAchievements
 
 --- Our custom print function.  Will print to screen and check the addon voice setting before concatenating the strings to text-to-speech.
 ---@param printString1 string First string to print/read
 ---@param ... string Additional strings to print/read
 local function AccessiblePrint(printString1, ...)
-    print(printString1, ...)
+    AA:Print(printString1, ...)
     if AADB ~= nil and AADB.voice == true then
-        TextToSpeech_Speak(printString1.. ..., TextToSpeech_GetSelectedVoice(0))
+        TextToSpeech_Speak("AccessibleAchievements " .. printString1.. ..., TextToSpeech_GetSelectedVoice(0))
     end
 end
 
@@ -51,30 +45,24 @@ local function PrintAddonStatus()
         voiceString = DISABLED
     end
 
-    AccessiblePrint("AccessibleAchievements is "..enabledString, "")
-    AccessiblePrint("AccessibleAchievements voice is "..voiceString, "")
+    AccessiblePrint(enabledString, "")
+    AccessiblePrint("voice "..voiceString, "")
 end
 
 --- Determine if we should be printing, then get the achievement info and call our print function.
----@param self any
 ---@param event any
-local function PrintAchievement(self, event)
-    if IsPrintEnabled() then   
-        if self == "ACHIEVEMENT_EARNED" then   
-            local _, name, _, _, _, _, _, description, _, _, _, _, _, _, _ = GetAchievementInfo(event)
-            if AADB ~= nil then
-                AADB.lastAchievement = "Achievement: "..name.." - "..description
-            end
-            AccessiblePrint("Achievement: "..name, description)
+local function PrintAchievement(event, achievementId)
+    if IsPrintEnabled() then    
+        local _, name, _, _, _, _, _, description, _, _, _, _, _, _, _ = GetAchievementInfo(achievementId)
+        if AADB ~= nil then
+            AADB.lastAchievement = "Achievement: "..name.." - "..description
         end
+        AccessiblePrint("Achievement: "..name, description)
     end
 end
 
---- Handler for PLAYER_LOGIN event. Setups up or reads our saved variables.
----@param self any
----@param event any
----@param ... unknown
-function f:PLAYER_LOGIN(self, event, ...)
+function AA:OnInitialize()
+    AA:Print("OnInitialize")
     AADB = AADB or {}
     if AADB.enabled == nil then
         AADB.enabled = true
@@ -86,40 +74,24 @@ function f:PLAYER_LOGIN(self, event, ...)
 
     AADB.replay = (AADB.replay or "")
 
+    AA:RegisterChatCommand("aa", "SlashCommand")
+    AA:RegisterChatCommand("accessibleachievements", "SlashCommand")
+end
+
+function AA:OnEnable()
+    AA:Print("OnEnable")
+    AA:RegisterEvent("ACHIEVEMENT_EARNED")
+
     PrintAddonStatus()
 end
 
 --- Handler for ACHIEVEMENT_EARNED event.
----@param self any
----@param event any
----@param ... unknown
-function f:ACHIEVEMENT_EARNED(self, event, ...)
-    C_Timer.After(1, function() PrintAchievement(self, event) end)
+function AA:ACHIEVEMENT_EARNED(event, achievementId, alreadyEarned)
+    PrintAchievement(event, achievementId)
 end
-
-function f:AUTOFOLLOW_BEGIN(self, event, name)
-    C_Timer.After(1, function() AccessiblePrint("Autofollowing ", name) end)
-end
-
-function f:AUTOFOLLOW_END(self, event, name)
-    C_Timer.After(1, function() AccessiblePrint("No longer Autofollowing ", name) end)
-end
-
-
-
-f:RegisterEvent("PLAYER_LOGIN")
-f:RegisterEvent("ACHIEVEMENT_EARNED")
--- f:RegisterEvent("AUTOFOLLOW_BEGIN")
--- f:RegisterEvent("AUTOFOLLOW_END")
-
-f:SetScript("OnEvent", f.OnEvent)
-
-SLASH_AA1 = "/aa"
-SLASH_AA2 = "/accessibleachievements"
 
 -- Configure slash commands for enable and disable of the printing
-
-local function HandleSlashCmds(msg, editBox)
+function AA:SlashCommand(msg)
     local cmd1 = strsplit(" ", msg)
     
     if #cmd1 > 0 then
@@ -144,5 +116,3 @@ local function HandleSlashCmds(msg, editBox)
         AccessiblePrint("Enter a command: /aa "..ENABLE.." or /aa "..DISABLE, " or /aa "..VOICE.." or /aa "..NOVOICE.." or /aa "..REPLAY)
     end
 end
-
-SlashCmdList.AA = HandleSlashCmds
