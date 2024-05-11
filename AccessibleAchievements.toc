@@ -1,5 +1,5 @@
 ## Interface: 100207
-## Version: 0.0.5
+## Version: 0.0.6
 ## Title: AccessibleAchievements
 ## Notes: Print the full text of your achievements when you earn one
 ## Author: ViralAnomaly
